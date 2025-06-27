@@ -1,0 +1,538 @@
+{
+  "name": "youtube 2",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {}
+      },
+      "id": "cfbe9f0b-27d9-468f-baf2-1d96c8bb60e5",
+      "name": "Download New Video",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -580,
+        520
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZZgJPDZ7O3G1G0TB",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "update",
+        "videoId": "={{ $('Upload Video to Youtube').item.json.uploadId }}",
+        "title": "={{ $json.title }}",
+        "regionCode": "US",
+        "categoryId": "22",
+        "updateFields": {
+          "description": "={{ $json.description }}\n\n{{ $json.tags.map(tag => '#' + tag.replace(/\\s+/g, '')).join(' ') }}\n",
+          "tags": "={{ $json.tags.map(tag => '#' + tag.replace(/\\s+/g, '')).join(' ') }}"
+        }
+      },
+      "id": "031a4568-c078-44f6-8845-a8eb9d152585",
+      "name": "Update Video's Metadata",
+      "type": "n8n-nodes-base.youTube",
+      "position": [
+        560,
+        520
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "9NEKIFqWkwVBDryb",
+          "name": "YouTube account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "# Upload New Video to Youtube\n",
+        "height": 240,
+        "width": 660,
+        "color": 4
+      },
+      "id": "523f0f69-b4ea-4e97-8b2b-e66cb7b56733",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -840,
+        440
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Download New Video').item.json.id }}"
+        },
+        "options": {}
+      },
+      "id": "fde4f7ec-e3e0-4ee8-a659-978aff6a49b6",
+      "name": "Delete File from Upload Folder (Optional)",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        860,
+        300
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZZgJPDZ7O3G1G0TB",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $json.id }}",
+        "regionCode": "DE",
+        "categoryId": "22",
+        "options": {
+          "privacyStatus": "public",
+          "selfDeclaredMadeForKids": false
+        }
+      },
+      "id": "e8022eb8-23e3-41d6-a155-ede8856e5ec9",
+      "name": "Upload Video to Youtube",
+      "type": "n8n-nodes-base.youTube",
+      "position": [
+        -360,
+        520
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "9NEKIFqWkwVBDryb",
+          "name": "YouTube account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2eb41a6f-d0ef-4ca2-be47-f93b1d5c1edb",
+              "name": "token",
+              "type": "string",
+              "value": "={{ $json.uploadId }}"
+            },
+            {
+              "id": "be653abe-0e1a-44c9-b6ab-77da57133858",
+              "name": "uploadId",
+              "value": "={{ $json.uploadId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b288b401-da58-447f-a043-949859f9b077",
+      "name": "ApifyToken",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -140,
+        520
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "list",
+        "useQueryString": true,
+        "queryString": "mimeType='video/mp4' and '1ad_-H9yzjgbVL1PrLOKaKqvYNqgNMGFx' in parents and trashed = false",
+        "limit": 1,
+        "options": {}
+      },
+      "id": "8412ded9-16e5-4a26-9496-72d302dacd81",
+      "name": "List Drive Files",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        520
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZZgJPDZ7O3G1G0TB",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemma-3n-e4b-it:free\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"You are an assistant that ONLY replies in JSON. Given a video title or YouTube URL, reply strictly in this format:\\n\\n{\\n  \\\"title\\\": \\\"\\\",\\n  \\\"description\\\": \\\"\\\",\\n  \\\"tags\\\": [\\\"\\\", \\\"\\\", \\\"\\\", \\\"\\\", \\\"\\\"]\\n}\\n\\nDo not include commentary, explanations, or markdown formatting.\\n\\nInput:\\n {{ $('Download New Video').item.json.id }}\"\n    }\n  ]\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        520
+      ],
+      "id": "c66a41c8-10dd-4d7b-96d7-1862a7d1f1da",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.choices[0].message.content;\n\nconst cleaned = raw\n  .replace(/^```json\\s*/i, '')\n  .replace(/```$/, '')\n  .replace(/{{.*?}}/g, 'placeholder') // remove invalid templating\n  .replace(/\\n/g, '')\n  .trim();\n\ntry {\n  const parsed = JSON.parse(cleaned);\n  return [\n    {\n      json: {\n        title: parsed.title,\n        description: parsed.description,\n        tags: parsed.tags\n      }\n    }\n  ];\n} catch (err) {\n  return [{ json: { error: 'Still broken', raw: cleaned, message: err.message } }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        520
+      ],
+      "id": "96ea906a-2325-4c74-87f4-c36932ff9f7e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1m3ta5ZCXgvBBN-2ZgMvgSPEVgpPHhfgQNGeYWZLjJT8",
+          "mode": "list",
+          "cachedResultName": "youtubeautomation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m3ta5ZCXgvBBN-2ZgMvgSPEVgpPHhfgQNGeYWZLjJT8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m3ta5ZCXgvBBN-2ZgMvgSPEVgpPHhfgQNGeYWZLjJT8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $json.snippet.title }}",
+            "Description": "={{ $json.snippet.description }}",
+            "Tags": "={{ $json.snippet.tags }}",
+            "Status": "={{ $json.status.uploadStatus }}",
+            "File Name": "={{ $('Download New Video').item.json.name }}",
+            "Drive Link": "={{ $('Download New Video').item.json.id }}",
+            "Instagram Link": "={{ $json.snippet.publishedAt }}",
+            "YouTube Link": "={{ `https://www.youtube.com/shorts/${$('Upload Video to Youtube').item.json.uploadId}` }}"
+          },
+          "matchingColumns": [
+            "Drive Link"
+          ],
+          "schema": [
+            {
+              "id": "File Name",
+              "displayName": "File Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Drive Link",
+              "displayName": "Drive Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tags",
+              "displayName": "Tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "YouTube Link",
+              "displayName": "YouTube Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Instagram Link",
+              "displayName": "Instagram Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        880,
+        740
+      ],
+      "id": "c0ff6e5b-5cd0-496e-8146-e33f1c232981",
+      "name": "Append row in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rt3LzpEzd4rMFoxV",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 3,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "id": "4bc6dea9-2079-40e8-be85-d7c3cdfd78d7",
+      "name": "3.30am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1140,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "id": "4e9aeada-fa67-445d-9eb4-662dd17b3801",
+      "name": "12.30am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1140,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 22,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "id": "33749752-415b-4a0b-baa8-d752a0a378e5",
+      "name": "10.30pm",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1140,
+        240
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "ApifyToken": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download New Video": {
+      "main": [
+        [
+          {
+            "node": "Upload Video to Youtube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Video's Metadata": {
+      "main": [
+        [
+          {
+            "node": "Delete File from Upload Folder (Optional)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Upload Video to Youtube": {
+      "main": [
+        [
+          {
+            "node": "ApifyToken",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Drive Files": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Update Video's Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10.30pm": {
+      "main": [
+        [
+          {
+            "node": "List Drive Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "12.30am": {
+      "main": [
+        [
+          {
+            "node": "List Drive Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3.30am": {
+      "main": [
+        [
+          {
+            "node": "List Drive Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "35b8b3fb-e41c-4a9f-8ea5-8bfd0ccb6d74",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f757c427f31a761bb0812a98161085c9f2084d7f008568550f22a21bdf3c23f3"
+  },
+  "id": "D6xFL2SfViRiO2u5",
+  "tags": []
+}
